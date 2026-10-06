@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abdul Hadi — Projects / Visual Archive</title>
+  <meta name="description" content="A cinematic scroll-driven gallery of selected works by Abdul Hadi." />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* =========================================================
+   ABDUL HADI — CINEMATIC GALLERY STYLES
+   ========================================================= */
+    :root {
+      --bg-0: #07090a;
+      --bg-1: #0b0f10;
+      --bg-2: #0f1517;
+      --line: #1d2729;
+      --ink: #f1ece0;
+      --ink-dim: #9aa3a0;
+      --ink-faint: #5b6663;
+      --emerald: #3ddc97;
+      --gold: #d8b46a;
+      --ease: cubic-bezier(.2, .7, .2, 1);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      background: var(--bg-0);
+      color: var(--ink);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body {
+      cursor: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ::selection {
+      background: var(--emerald);
+      color: #04140c;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-0);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1c2a2c;
+      border-radius: 8px;
+    }
+
+    /* Custom Cursor */
+    #cursor,
+    #cursor-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    #cursor {
+      width: 8px;
+      height: 8px;
+      background: var(--ink);
+      mix-blend-mode: difference;
+      transition: width .3s var(--ease), height .3s var(--ease);
+    }
+
+    #cursor-ring {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(241, 236, 224, 0.3);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--ink);
+      text-transform: uppercase;
+      transition: width .35s var(--ease), height .35s var(--ease), border-color .35s var(--ease);
+    }
+
+    #cursor-ring .cur-label {
+      opacity: 0;
+      transition: opacity .25s var(--ease);
+    }
+
+    #cursor.hovering {
+      width: 4px;
+      height: 4px;
+    }
+
+    #cursor-ring.hovering {
+      width: 70px;
+      height: 70px;
+      border-color: var(--emerald);
+    }
+
+    #cursor-ring.hovering .cur-label {
+      opacity: 1;
+    }
+
+    #cursor-ring.view .cur-label::before {
+      content: "VIEW";
+    }
+
+    #cursor-ring.drag .cur-label::before {
+      content: "SCROLL";
+    }
+
+    @media (hover: none),
+    (pointer: coarse) {
+      body {
+        cursor: auto;
+      }
+
+      #cursor,
+      #cursor-ring {
+        display: none !important;
+      }
+    }
+
+    /* Navigation Back Button */
+    #back-btn {
+      position: fixed;
+      top: 28px;
+      left: 32px;
+      z-index: 9500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 30px;
+      background: rgba(13, 19, 20, 0.6);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: border-color .3s var(--ease), color .3s var(--ease);
+    }
+
+    #back-btn:hover {
+      border-color: var(--emerald);
+      color: var(--emerald);
+    }
+
+    /* Scroll Progress */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 0;
+      z-index: 9000;
+      background: linear-gradient(90deg, var(--emerald), var(--gold));
+      box-shadow: 0 0 14px rgba(61, 220, 151, 0.4);
+    }
+
+    /* =========================================================
+   INTRO SECTION
+   ========================================================= */
+    .intro-section {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-0);
+    }
+
+    .intro-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(61, 220, 151, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(61, 220, 151, 0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+    }
+
+    .intro-glow {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(61, 220, 151, 0.10), transparent 70%);
+      filter: blur(80px);
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .intro-content {
+      text-align: center;
+      z-index: 2;
+    }
+
+    .intro-line {
+      height: 1px;
+      background: var(--emerald);
+      width: 0;
+      margin: 24px auto;
+    }
+
+    .intro-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(56px, 12vw, 180px);
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      overflow: hidden;
+    }
+
+    .intro-title span {
+      display: inline-block;
+      transform: translateY(110%);
+    }
+
+    .intro-sub {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      letter-spacing: 0.3em;
+      color: var(--ink-dim);
+      text-transform: uppercase;
+      opacity: 0;
+    }
+
+    /* =========================================================
+   GRID SECTION
+   ========================================================= */
+    .grid-section {
+      min-height: 100vh;
+      padding: 120px 5vw;
+      background: var(--bg-0);
+      position: relative;
+    }
+
+    .grid-header {
+      margin-bottom: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .grid-header h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(32px, 5vw, 64px);
+    }
+
+    .grid-header .meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.2em;
+      text-align: right;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-item {
+      aspect-ratio: 4/5;
+      background-size: cover;
+      background-position: center;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background-color: var(--bg-2);
+      opacity: 0;
+      transform: scale(0.65) translateY(80px) rotate(5deg);
+      will-change: transform, opacity;
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+      transition: border-color .3s var(--ease);
+    }
+
+    .grid-item:hover {
+      border-color: var(--emerald);
+    }
+
+    .grid-item::after {
+      content: attr(data-num);
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink);
+      opacity: 0;
+      transition: opacity .3s var(--ease);
+      z-index: 2;
+    }
+
+    .grid-item:hover::after {
+      opacity: 1;
+    }
+
+    .grid-item::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 60%, rgba(7, 9, 10, 0.8));
+      opacity: 0;
+      transition: opacity .3s var(--ease);
+      z-index: 1;
+    }
+
+    .grid-item:hover::before {
+      opacity: 1;
+    }
+
+    /* =========================================================
+   TRANSITION SECTION
+   ========================================================= */
+    .transition-section {
+      height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .transition-text {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(48px, 10vw, 160px);
+      line-height: 0.9;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    /* =========================================================
+   CINEMATIC SECTION
+   ========================================================= */
+    .cinema-section {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-0);
+    }
+
+    .cinema-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cinema-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32vw;
+      height: 42vh;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      will-change: transform, opacity;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 768px) {
+      .cinema-img {
+        width: 70vw;
+        height: 35vh;
+      }
+    }
+
+    .bg-text-cinema {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(100px, 20vw, 320px);
+      line-height: 0.8;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(241, 236, 224, 0.04);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .proj-counter {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      z-index: 9000;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--ink-dim);
+      letter-spacing: 0.2em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity .3s var(--ease);
+    }
+
+    .proj-counter.active {
+      opacity: 1;
+    }
+
+    .proj-counter .pc-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+    }
+
+    /* =========================================================
+   LEGENDARY LIGHTBOX MODAL
+   ========================================================= */
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lightbox.open {
+      display: flex;
+    }
+
+    .lb-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 10, 0.95);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+    }
+
+    .lb-content {
+      position: relative;
+      width: 90vw;
+      max-width: 1200px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+    }
+
+    #lb-img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+      transform: scale(0.85);
+    }
+
+    .lb-meta {
+      margin-top: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: var(--ink-dim);
+    }
+
+    #lb-num {
+      color: var(--emerald);
+    }
+
+    .lb-close {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 50px;
+      height: 50px;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s var(--ease);
+    }
+
+    .lb-close:hover {
+      background: var(--emerald);
+      color: #04140c;
+      border-color: var(--emerald);
+    }
+
+    .lb-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 60px;
+      height: 60px;
+      background: rgba(13, 19, 20, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s var(--ease);
+      opacity: 1;
+      z-index: 10;
+    }
+
+    .lb-nav.lb-prev {
+      left: 20px;
+    }
+
+    .lb-nav.lb-next {
+      right: 20px;
+    }
+
+    .lb-nav:hover {
+      background: var(--emerald);
+      color: #04140c;
+      border-color: var(--emerald);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      .lb-nav {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+      }
+
+      .lb-nav.lb-prev {
+        left: 10px;
+      }
+
+      .lb-nav.lb-next {
+        right: 10px;
+      }
+    }
+
+    /* =========================================================
+   FINAL CTA SECTION
+   ========================================================= */
+    .final-cta {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: radial-gradient(ellipse at 50% 50%, #0c1612 0%, #07090a 60%);
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(40px);
+      padding: 60px 5vw;
+    }
+
+    .fc-content {
+      max-width: 900px;
+    }
+
+    .fc-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      margin-bottom: 30px;
+    }
+
+    .fc-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(48px, 8vw, 120px);
+      line-height: 0.95;
+      margin-bottom: 50px;
+    }
+
+    .fc-title .gold {
+      color: var(--gold);
+    }
+
+    .contact-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--gold);
+      color: #0c0a04;
+      padding: 20px 40px;
+      border-radius: 50px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      cursor: none;
+      transition: background .3s var(--ease), transform .3s var(--ease);
+    }
+
+    .contact-cta:hover {
+      background: var(--emerald);
+      transform: translateY(-3px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Custom Cursor -->
+  <div id="cursor"></div>
+  <div id="cursor-ring"><span class="cur-label"></span></div>
+
+  <!-- Scroll Progress -->
+  <div id="scroll-progress"></div>
+
+  <!-- Back Button -->
+  <a href="index.html" id="back-btn" data-cursor="drag">
+    <i class="fa-solid fa-arrow-left"></i> Back to Home
+  </a>
+
+  <!-- Intro Section -->
+  <section class="intro-section">
+    <div class="intro-grid"></div>
+    <div class="intro-glow"></div>
+    <div class="intro-content">
+      <div class="intro-line"></div>
+      <h1 class="intro-title"><span>PROJECTS</span></h1>
+      <div class="intro-line"></div>
+      <div class="intro-sub">A COLLECTION OF SELECTED WORK</div>
+    </div>
+  </section>
+
+  <!-- Grid Section -->
+  <section class="grid-section">
+    <div class="grid-header">
+      <h2>THE ARCHIVE</h2>
+      <div class="meta">VISUAL PORTFOLIO</div>
+    </div>
+    <div class="grid-container" id="grid-container"></div>
+  </section>
+
+  <!-- Transition Section -->
+  <section class="transition-section">
+    <div class="transition-text">ENTERING THE<br><span style="color:var(--emerald)">VISUAL ARCHIVE</span></div>
+  </section>
+
+  <!-- Cinematic Section -->
+  <section class="cinema-section">
+    <div class="bg-text-cinema">SELECTED WORK</div>
+    <div class="cinema-stage" id="cinema-stage"></div>
+  </section>
+
+  <!-- Project Counter -->
+  <div class="proj-counter" id="proj-counter">
+    <div class="pc-dot"></div>
+    <span id="counter-text">01 / 45</span>
+  </div>
+
+  <!-- Legendary Lightbox -->
+  <div id="lightbox">
+    <div class="lb-backdrop" id="lb-backdrop"></div>
+    <div class="lb-content" id="lb-content">
+      <button class="lb-close" id="lb-close"><i class="fa-solid fa-xmark"></i></button>
+      <button class="lb-nav lb-prev" id="lb-prev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+      <button class="lb-nav lb-next" id="lb-next" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+      <img src="" id="lb-img" alt="Project Preview" />
+      <div class="lb-meta">
+        <span id="lb-num"></span>
+        <span>SELECTED WORK</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="fc-content">
+      <div class="fc-eyebrow">END OF ARCHIVE</div>
+      <h2 class="fc-title">MORE THAN<br>JUST DESIGN.<br><span class="gold">LET'S CREATE.</span></h2>
+      <a href="index.html#contact" class="contact-cta" data-cursor="drag">Get In Touch <i
+          class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+/* ---------------------------------------------------------
+        SMART AUTO-DETECT IMAGE LOADER (SKIPS MISSING IMAGES)
+        Handles both "image (1).png" and "image-(1).png" formats
+        --------------------------------------------------------- */
+      function checkImageExists(index) {
+        return new Promise((resolve) => {
+          const exts = ['jpg', 'png', 'jpeg', 'webp'];
+          const formats = [
+            `Public/image%20(${index})`,  // space format: image (1).png
+            `Public/image-(${index})`     // dash format: image-(1).png
+          ];
+          let formatIndex = 0;
+          let currentExt = 0;
+
+          const tryNext = () => {
+            if (formatIndex >= formats.length) {
+              resolve(null);
+              return;
+            }
+            if (currentExt >= exts.length) {
+              formatIndex++;
+              currentExt = 0;
+              tryNext();
+              return;
+            }
+            const baseSrc = formats[formatIndex];
+            const ext = exts[currentExt];
+            const src = `${baseSrc}.${ext}`;
+            const img = new Image();
+            img.onload = () => resolve({ src: src, num: index });
+            img.onerror = () => {
+              currentExt++;
+              tryNext();
+            };
+            img.src = src;
+          };
+          tryNext();
+        });
+      }
+
+      // Automatically finds all images, skipping any missing ones
+      async function discoverImages() {
+        const sources = [];
+        let consecutiveMisses = 0;
+
+        for (let i = 1; i <= 100; i++) {
+          const result = await checkImageExists(i);
+          if (result) {
+            sources.push(result);
+            consecutiveMisses = 0;
+          } else {
+            consecutiveMisses++;
+            if (consecutiveMisses >= 5) break;
+          }
+        }
+        return sources;
+      }
+
+/* ---------------------------------------------------------
+        CUSTOM CURSOR
+        --------------------------------------------------------- */
+      if (!isTouch) {
+        const cursor = document.getElementById('cursor');
+        const ring = document.getElementById('cursor-ring');
+        let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+        let rx = mx, ry = my;
+
+        window.addEventListener('mousemove', (e) => {
+          mx = e.clientX; my = e.clientY;
+          gsap.to(cursor, { x: mx, y: my, duration: 0.1, ease: 'power2.out' });
+        });
+
+        gsap.ticker.add(() => {
+          rx += (mx - rx) * 0.15;
+          ry += (my - ry) * 0.15;
+          ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+        });
+
+        // Helper function to add cursor events
+        function addCursorEvents(selector, cursorType) {
+          document.querySelectorAll(selector).forEach(el => {
+            el.addEventListener('mouseenter', () => {
+              ring.classList.add('hovering');
+              cursor.classList.add('hovering');
+              if (cursorType) ring.classList.add(cursorType);
+            });
+            el.addEventListener('mouseleave', () => {
+              ring.classList.remove('hovering', 'view', 'drag');
+              cursor.classList.remove('hovering');
+            });
+          });
+        }
+
+        // Apply to existing elements
+        addCursorEvents('a, button, [data-cursor]', null);
+      }
+
+    /* ---------------------------------------------------------
+       SCROLL PROGRESS
+       --------------------------------------------------------- */
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const scrolled = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      document.getElementById('scroll-progress').style.width = scrolled + '%';
+    }, { passive: true });
+
+    /* ---------------------------------------------------------
+       INTRO & GRID ANIMATIONS
+       --------------------------------------------------------- */
+    const introTl = gsap.timeline({ delay: 0.2 });
+    introTl
+      .to('.intro-line', { width: 240, duration: 1, ease: 'power3.out' })
+      .to('.intro-title span', { y: 0, duration: 1.2, ease: 'power4.out' }, '-=0.8')
+      .to('.intro-sub', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4')
+      .to('.intro-section', { y: -100, opacity: 0, duration: 1, delay: 1, ease: 'power2.inOut' })
+      .to('.grid-section', { opacity: 1, duration: 1 }, '-=0.5');
+
+    // Transition Text
+    gsap.fromTo('.transition-text',
+      { opacity: 0, scale: 0.8 },
+      {
+        opacity: 1, scale: 1, duration: 1.5, ease: 'power3.out',
+        scrollTrigger: { trigger: '.transition-section', start: 'top 60%' }
+      }
+    );
+    gsap.to('.transition-text', {
+      opacity: 0, scale: 1.2, duration: 1, ease: 'power2.in',
+      scrollTrigger: { trigger: '.transition-section', start: 'bottom 30%' }
+    });
+
+/* ---------------------------------------------------------
+        LEGENDARY LIGHTBOX MODAL
+        --------------------------------------------------------- */
+      const lightbox = document.getElementById('lightbox');
+      const lbImg = document.getElementById('lb-img');
+      const lbNum = document.getElementById('lb-num');
+      const lbPrev = document.getElementById('lb-prev');
+      const lbNext = document.getElementById('lb-next');
+
+      let currentImageIndex = 0;
+      let allImages = [];
+
+      function openLightbox(item, index) {
+        const src = item.dataset.src;
+        if (!src) return;
+
+        currentImageIndex = index;
+        allImages = Array.from(document.querySelectorAll('.grid-item'));
+        updateLightboxImage();
+
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        gsap.to('#lb-backdrop', { opacity: 1, duration: 0.4, ease: 'power2.out' });
+        gsap.to('#lb-content', { opacity: 1, duration: 0.4, ease: 'power2.out' });
+        gsap.fromTo('#lb-img', { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'power3.out' });
+        gsap.fromTo('.lb-meta', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, delay: 0.2 });
+        gsap.fromTo('.lb-close', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, delay: 0.3, ease: 'back.out(2)' });
+        gsap.fromTo('.lb-nav', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, delay: 0.3, ease: 'back.out(2)' });
+      }
+
+      function updateLightboxImage() {
+        if (allImages.length === 0) return;
+
+        const item = allImages[currentImageIndex];
+        lbImg.src = item.dataset.src;
+        lbNum.textContent = item.dataset.num;
+
+        gsap.fromTo('#lb-img', { scale: 0.95, opacity: 0.5 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power2.out' });
+      }
+
+      function navigateLightbox(direction) {
+        if (allImages.length === 0) return;
+
+        currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+        updateLightboxImage();
+      }
+
+      function closeLightbox() {
+        gsap.to('#lb-backdrop', { opacity: 0, duration: 0.3, ease: 'power2.in' });
+        gsap.to('#lb-content', {
+          opacity: 0, scale: 0.9, duration: 0.3, ease: 'power2.in', onComplete: () => {
+            lightbox.classList.remove('open');
+            document.body.style.overflow = 'auto';
+          }
+        });
+      }
+
+      // Navigation button events
+      lbPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigateLightbox(-1);
+      });
+
+      lbNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigateLightbox(1);
+      });
+
+      document.getElementById('lb-close').addEventListener('click', closeLightbox);
+      document.getElementById('lb-backdrop').addEventListener('click', closeLightbox);
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+
+        if (e.key === 'Escape') {
+          closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+          navigateLightbox(-1);
+        } else if (e.key === 'ArrowRight') {
+          navigateLightbox(1);
+        }
+      });
+
+      // Touch/swipe support
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      lbImg.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      lbImg.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+
+      function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+          if (diff > 0) {
+            navigateLightbox(1); // Swipe left -> next
+          } else {
+            navigateLightbox(-1); // Swipe right -> previous
+          }
+        }
+      }
+
+    /* ---------------------------------------------------------
+       MAIN INITIALIZATION
+       --------------------------------------------------------- */
+    const gridContainer = document.getElementById('grid-container');
+    const cinemaStage = document.getElementById('cinema-stage');
+    const counterEl = document.getElementById('counter-text');
+    const counterWrap = document.getElementById('proj-counter');
+
+    async function initPage() {
+      // 1. Discover all images (skips missing ones automatically)
+      const images = await discoverImages();
+      const totalImages = images.length;
+
+      if (totalImages === 0) {
+        gridContainer.innerHTML = "<p style='color: var(--ink-dim); text-align: center; grid-column: 1/-1;'>No images found. Ensure files are named 'image (1).png', etc.</p>";
+        return;
+      }
+
+      // 2. Generate DOM elements
+      images.forEach(img => {
+        // Grid Item
+        const gridEl = document.createElement('div');
+        gridEl.className = 'grid-item';
+        gridEl.dataset.num = String(img.num).padStart(2, '0') + ' / ' + totalImages;
+        gridEl.dataset.src = img.src;
+        gridEl.style.backgroundImage = `url("${img.src}")`;
+        gridContainer.appendChild(gridEl);
+
+        // Cinema Item
+        const cEl = document.createElement('div');
+        cEl.className = 'cinema-img';
+        cEl.id = `c-img-${img.num}`;
+        cEl.style.backgroundImage = `url("${img.src}")`;
+        cinemaStage.appendChild(cEl);
+      });
+
+      // 3. Apply Custom Cursor to dynamic elements
+      if (!isTouch) {
+        const cursor = document.getElementById('cursor');
+        const ring = document.getElementById('cursor-ring');
+
+        function addCursorEvents(selector, cursorType) {
+          document.querySelectorAll(selector).forEach(el => {
+            el.addEventListener('mouseenter', () => {
+              ring.classList.add('hovering');
+              cursor.classList.add('hovering');
+              if (cursorType) ring.classList.add(cursorType);
+            });
+            el.addEventListener('mouseleave', () => {
+              ring.classList.remove('hovering', 'view', 'drag');
+              cursor.classList.remove('hovering');
+            });
+          });
+        }
+
+        addCursorEvents('a, button, [data-cursor]', null);
+        addCursorEvents('.grid-item', 'view');
+        addCursorEvents('.lb-nav', 'view');
+        addCursorEvents('.lb-close', 'view');
+      }
+
+      // 4. Grid Animations
+      gsap.set('.grid-item', { opacity: 0, scale: 0.65, y: 80, rotation: () => gsap.utils.random(-6, 6) });
+      gsap.to('.grid-item:nth-child(-n+12)', {
+        opacity: 1, scale: 1, y: 0, rotation: 0,
+        duration: 1, stagger: { amount: 1.5, from: "random" }, ease: "power3.out",
+        delay: 3.5
+      });
+
+      gsap.utils.toArray('.grid-item:nth-child(n+13)').forEach((item) => {
+        gsap.to(item, {
+          opacity: 1, scale: 1, y: 0, rotation: 0, duration: 0.8, ease: "power3.out",
+          scrollTrigger: { trigger: item, start: "top 95%" }
+        });
+      });
+
+      // 5. Lightbox Click Events
+      document.querySelectorAll('.grid-item').forEach((item, index) => {
+        item.addEventListener('click', () => openLightbox(item, index));
+      });
+
+      // 6. Cinematic Timeline Setup
+      function updateCounter(val) {
+        counterEl.textContent = String(val).padStart(2, '0') + ' / ' + totalImages;
+      }
+
+      const mm = gsap.matchMedia();
+
+      mm.add("(min-width: 769px)", () => {
+        const pos = {
+          enter: { xPercent: -200, yPercent: -200, scale: 0.6, opacity: 0 },
+          tl: { xPercent: -80, yPercent: -70, scale: 1, opacity: 1 },
+          tr: { xPercent: 80, yPercent: -70, scale: 1, opacity: 1 },
+          br: { xPercent: 80, yPercent: 70, scale: 1, opacity: 1 },
+          bl: { xPercent: -80, yPercent: 70, scale: 1, opacity: 1 },
+          expandTL: { xPercent: -120, yPercent: -120, scale: 0.85 },
+          expandTR: { xPercent: 120, yPercent: -120, scale: 0.85 },
+          expandBL: { xPercent: -120, yPercent: 120, scale: 0.85 },
+          expandBR: { xPercent: 120, yPercent: 120, scale: 0.85 },
+          exitL: { xPercent: -250, opacity: 0, scale: 0.6 },
+          exitR: { xPercent: 250, opacity: 0, scale: 0.6 }
+        };
+
+        gsap.set(".cinema-img", pos.enter);
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: ".cinema-section",
+            start: "top top",
+            end: "+=" + (totalImages * 300),
+            scrub: 1.5,
+            pin: true,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              if (self.progress > 0.02 && self.progress < 0.95) {
+                counterWrap.classList.add('active');
+              } else {
+                counterWrap.classList.remove('active');
+              }
+            }
+          }
+        });
+
+        let t = 0;
+
+        if (totalImages >= 1) { tl.to("#c-img-1", { ...pos.tl, duration: 0.5 }, t); tl.add(() => updateCounter(1), t); t += 1; }
+        if (totalImages >= 2) { tl.to("#c-img-2", { ...pos.tr, duration: 0.5 }, t); tl.add(() => updateCounter(2), t); t += 1; }
+        if (totalImages >= 3) { tl.to("#c-img-3", { ...pos.bl, duration: 0.5 }, t); tl.add(() => updateCounter(3), t); t += 1; }
+        if (totalImages >= 4) { tl.to("#c-img-4", { ...pos.br, duration: 0.5 }, t); tl.add(() => updateCounter(4), t); t += 1; }
+
+        if (totalImages >= 4) {
+          tl.to(".cinema-img", { yPercent: "-=10", duration: 2 }, t); t += 2;
+
+          tl.to("#c-img-1", { ...pos.expandTL, duration: 0.5 }, t);
+          tl.to("#c-img-2", { ...pos.expandTR, duration: 0.5 }, t);
+          tl.to("#c-img-3", { ...pos.expandBL, duration: 0.5 }, t);
+          tl.to("#c-img-4", { ...pos.expandBR, duration: 0.5 }, t); t += 1;
+
+          tl.to("#c-img-1", { scale: 1.1, duration: 0.5 }, t); t += 0.5;
+          tl.to("#c-img-2", { scale: 1.1, duration: 0.5 }, t); t += 0.5;
+          tl.to("#c-img-3", { scale: 1.1, duration: 0.5 }, t); t += 0.5;
+          tl.to("#c-img-4", { scale: 1.1, duration: 0.5 }, t); t += 0.5;
+
+          tl.to("#c-img-1", { ...pos.exitL, duration: 0.5 }, t);
+          tl.to("#c-img-3", { ...pos.exitL, duration: 0.5 }, t);
+          tl.to("#c-img-2", { ...pos.exitR, duration: 0.5 }, t);
+          tl.to("#c-img-4", { ...pos.exitR, duration: 0.5 }, t); t += 1;
+        }
+
+        for (let i = 4; i < totalImages; i++) {
+          tl.to(`#c-img-${images[i].num}`, { ...pos.tl, duration: 0.5 }, t);
+          tl.add(() => updateCounter(images[i].num), t);
+
+          if (i > 4) tl.to(`#c-img-${images[i - 1].num}`, { ...pos.tr, duration: 0.5 }, t);
+          if (i > 5) tl.to(`#c-img-${images[i - 2].num}`, { ...pos.br, duration: 0.5 }, t);
+          if (i > 6) tl.to(`#c-img-${images[i - 3].num}`, { ...pos.bl, duration: 0.5 }, t);
+          if (i > 7) tl.to(`#c-img-${images[i - 4].num}`, { ...pos.exitL, duration: 0.5 }, t);
+
+          t += 1;
+        }
+
+        // Flush remaining
+        if (totalImages > 4) {
+          let lastIdx = totalImages - 1;
+          if (lastIdx - 3 >= 0) tl.to(`#c-img-${images[lastIdx].num}`, { ...pos.tr, duration: 0.5 }, t);
+          if (lastIdx - 2 >= 0) tl.to(`#c-img-${images[lastIdx - 1].num}`, { ...pos.br, duration: 0.5 }, t);
+          if (lastIdx - 1 >= 0) tl.to(`#c-img-${images[lastIdx - 2].num}`, { ...pos.bl, duration: 0.5 }, t);
+          if (lastIdx - 4 >= 0) tl.to(`#c-img-${images[lastIdx - 3].num}`, { ...pos.exitL, duration: 0.5 }, t);
+          t += 1;
+
+          if (lastIdx - 2 >= 0) tl.to(`#c-img-${images[lastIdx].num}`, { ...pos.br, duration: 0.5 }, t);
+          if (lastIdx - 1 >= 0) tl.to(`#c-img-${images[lastIdx - 1].num}`, { ...pos.bl, duration: 0.5 }, t);
+          if (lastIdx - 3 >= 0) tl.to(`#c-img-${images[lastIdx - 2].num}`, { ...pos.exitL, duration: 0.5 }, t);
+          t += 1;
+
+          if (lastIdx - 1 >= 0) tl.to(`#c-img-${images[lastIdx].num}`, { ...pos.bl, duration: 0.5 }, t);
+          if (lastIdx - 2 >= 0) tl.to(`#c-img-${images[lastIdx - 1].num}`, { ...pos.exitL, duration: 0.5 }, t);
+          t += 1;
+
+          tl.to(`#c-img-${images[lastIdx].num}`, { ...pos.exitL, duration: 0.5 }, t);
+          t += 1;
+        }
+
+        tl.to(".bg-text-cinema", { x: 300, duration: t, ease: "none" }, 0);
+        tl.to(".cinema-section", { opacity: 0, scale: 0.9, duration: 1 }, t);
+        tl.to(".final-cta", { opacity: 1, y: 0, duration: 1 }, t);
+      });
+
+      mm.add("(max-width: 768px)", () => {
+        const mPos = {
+          enter: { xPercent: 0, yPercent: -200, scale: 0.6, opacity: 0 },
+          top: { xPercent: 0, yPercent: -60, scale: 1, opacity: 1 },
+          bottom: { xPercent: 0, yPercent: 60, scale: 1, opacity: 1 },
+          exitL: { xPercent: -250, opacity: 0, scale: 0.6 }
+        };
+
+        gsap.set(".cinema-img", mPos.enter);
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: ".cinema-section",
+            start: "top top",
+            end: "+=" + (totalImages * 250),
+            scrub: 1.5,
+            pin: true,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              if (self.progress > 0.02 && self.progress < 0.95) {
+                counterWrap.classList.add('active');
+              } else {
+                counterWrap.classList.remove('active');
+              }
+            }
+          }
+        });
+
+        let t = 0;
+
+        if (totalImages >= 1) { tl.to("#c-img-1", { ...mPos.top, duration: 0.5 }, t); tl.add(() => updateCounter(1), t); t += 1; }
+        if (totalImages >= 2) { tl.to("#c-img-2", { ...mPos.bottom, duration: 0.5 }, t); tl.add(() => updateCounter(2), t); t += 1; }
+        if (totalImages >= 3) { tl.to("#c-img-3", { ...mPos.top, duration: 0.5 }, t); tl.add(() => updateCounter(3), t); t += 1; }
+        if (totalImages >= 4) { tl.to("#c-img-4", { ...mPos.bottom, duration: 0.5 }, t); tl.add(() => updateCounter(4), t); t += 1; }
+
+        if (totalImages >= 4) {
+          tl.to("#c-img-1", { scale: 1.1, duration: 0.5 }, t); tl.to("#c-img-3", { scale: 1.1, duration: 0.5 }, t); t += 1;
+          tl.to("#c-img-1", { ...mPos.exitL, duration: 0.5 }, t); tl.to("#c-img-3", { ...mPos.exitL, duration: 0.5 }, t); t += 1;
+          tl.to("#c-img-2", { scale: 1.1, duration: 0.5 }, t); tl.to("#c-img-4", { scale: 1.1, duration: 0.5 }, t); t += 1;
+          tl.to("#c-img-2", { ...mPos.exitL, duration: 0.5 }, t); tl.to("#c-img-4", { ...mPos.exitL, duration: 0.5 }, t); t += 1;
+        }
+
+        for (let i = 4; i < totalImages; i++) {
+          tl.to(`#c-img-${images[i].num}`, { ...mPos.top, duration: 0.5 }, t);
+          tl.add(() => updateCounter(images[i].num), t);
+
+          if (i > 4) tl.to(`#c-img-${images[i - 1].num}`, { ...mPos.bottom, duration: 0.5 }, t);
+          if (i > 5) tl.to(`#c-img-${images[i - 2].num}`, { ...mPos.exitL, duration: 0.5 }, t);
+
+          t += 1;
+        }
+
+        if (totalImages > 4) {
+          let lastIdx = totalImages - 1;
+          if (lastIdx - 2 >= 0) tl.to(`#c-img-${images[lastIdx].num}`, { ...mPos.bottom, duration: 0.5 }, t);
+          if (lastIdx - 3 >= 0) tl.to(`#c-img-${images[lastIdx - 1].num}`, { ...mPos.exitL, duration: 0.5 }, t);
+          t += 1;
+          tl.to(`#c-img-${images[lastIdx].num}`, { ...mPos.exitL, duration: 0.5 }, t); t += 1;
+        }
+
+        tl.to(".cinema-section", { opacity: 0, scale: 0.9, duration: 1 }, t);
+        tl.to(".final-cta", { opacity: 1, y: 0, duration: 1 }, t);
+      });
+
+      ScrollTrigger.refresh();
+    }
+
+    initPage();
+
+    window.addEventListener('resize', ScrollTrigger.refresh);
+  </script>
+</body>
+
+</html>
