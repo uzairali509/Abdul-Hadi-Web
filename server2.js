@@ -27,7 +27,7 @@ const s = http.createServer((req,res)=>{
   });
 });
 
-s.listen(4000,()=>console.log('Server running on http://localhost:4000'));
+s.listen(3000,()=>console.log('Server running on http://localhost:3000'));
 s.on('error',e=>console.error('Server error:',e));
 process.on('uncaughtException',e=>console.error('Uncaught:',e));
 process.on('unhandledRejection',e=>console.error('Unhandled:',e));
